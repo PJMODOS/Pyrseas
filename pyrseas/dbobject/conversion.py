@@ -117,7 +117,7 @@ class ConversionDict(DbObjectDict):
                     try:
                         stmts.append(self[oldname].rename(inconv.name))
                         del self[oldname]
-                    except KeyError as exc:
+                    except KeyError, exc:
                         exc.args = ("Previous name '%s' for conversion '%s' "
                                     "not found" % (oldname, inconv.name), )
                         raise

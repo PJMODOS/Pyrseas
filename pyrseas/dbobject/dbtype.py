@@ -213,7 +213,7 @@ class TypeDict(DbObjectDict):
                     incomp = inobjs[k]
                     try:
                         newdb.columns.from_map(comp, incomp['attributes'])
-                    except KeyError as exc:
+                    except KeyError, exc:
                         exc.args = ("Type '%s' has no attributes" % key, )
                         raise
                     if 'oldname' in incomp:
