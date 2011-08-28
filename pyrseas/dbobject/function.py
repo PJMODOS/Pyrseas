@@ -168,8 +168,63 @@ class ProcDict(DbObjectDict):
            WHERE (nspname != 'pg_catalog' AND nspname != 'information_schema')
            ORDER BY nspname, proname"""
 
+    query_83 = \
+        """SELECT nspname AS schema, proname AS name,
+                  array_to_string(ARRAY(
+                    SELECT
+                        CASE proargmodes[n]
+                            WHEN 'o' THEN 'OUT '
+                            WHEN 'b' THEN 'INOUT '
+                            ELSE ''
+                        END || coalesce(proargnames[n] || ' ', '') || proargtypes[n]
+                    FROM
+                        (SELECT
+                            oid,
+                            proname,
+                            proargmodes,
+                            proargnames,
+                            proargtypes,
+                            generate_series(1, array_upper(proargtypes, 1)) AS n,
+                            array_upper(proargtypes, 1) as n_max
+                        FROM
+                            (SELECT
+                                oid,
+                                proname,
+                                proargmodes,
+                                proargnames,
+                                coalesce(proallargtypes, (proargtypes::oid[])[array_lower(proargtypes::oid[],1):array_upper(proargtypes::oid[],1)])::regtype[] AS proargtypes
+                            FROM
+                                pg_proc
+                            ) AS q1
+                        ) AS q2 WHERE q2.oid = p.oid), ', ')
+                  AS arguments,
+                  CASE proretset
+                      WHEN TRUE THEN 'SETOF '
+                      ELSE ''
+                  END || prorettype::regtype AS returns,
+                  l.lanname AS language, provolatile AS volatility,
+                  proisstrict AS strict, proisagg, prosrc AS source,
+                  probin::text AS obj_file,
+                  prosecdef AS security_definer,
+                  aggtransfn::regprocedure AS sfunc,
+                  aggtranstype::regtype AS stype,
+                  aggfinalfn::regprocedure AS finalfunc,
+                  agginitval AS initcond,
+                  description
+           FROM pg_proc p
+                JOIN pg_namespace n ON (pronamespace = n.oid)
+                JOIN pg_language l ON (prolang = l.oid)
+                LEFT JOIN pg_aggregate a ON (p.oid = aggfnoid)
+                LEFT JOIN pg_description d
+                     ON (p.oid = d.objoid AND d.objsubid = 0)
+           WHERE (nspname != 'pg_catalog' AND nspname != 'information_schema')
+           ORDER BY nspname, proname"""
+
     def _from_catalog(self):
         """Initialize the dictionary of procedures by querying the catalogs"""
+        if self.dbconn.version < 84000:
+            self.query = self.query_83
+
         for proc in self.fetch():
             sch, prc, arg = proc.key()
             if hasattr(proc, 'proisagg'):

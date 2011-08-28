@@ -110,6 +110,36 @@ class CastDict(DbObjectDict):
               OR (castfunc != 0 AND substring(pn.nspname for 3) != 'pg_')
            ORDER BY castsource, casttarget"""
 
+    query_83 = \
+        """SELECT castsource::regtype AS source,
+                  casttarget::regtype AS target,
+                  CASE WHEN castfunc <> 0 THEN castfunc::regprocedure
+                       ELSE NULL::regprocedure END AS function,
+                  castcontext AS context,
+                  CASE WHEN castfunc <> 0 THEN 'f'
+                       ELSE 'b' END AS method,
+                  description
+           FROM pg_cast c
+                JOIN pg_type s ON (castsource = s.oid)
+                     JOIN pg_namespace sn ON (s.typnamespace = sn.oid)
+                JOIN pg_type t ON (casttarget = t.oid)
+                     JOIN pg_namespace tn ON (t.typnamespace = tn.oid)
+                LEFT JOIN pg_proc p ON (castfunc = p.oid)
+                     LEFT JOIN pg_namespace pn ON (p.pronamespace = pn.oid)
+                LEFT JOIN pg_description d
+                     ON (c.oid = d.objoid AND d.objsubid = 0)
+           WHERE substring(sn.nspname for 3) != 'pg_'
+              OR substring(tn.nspname for 3) != 'pg_'
+              OR (castfunc != 0 AND substring(pn.nspname for 3) != 'pg_')
+           ORDER BY castsource, casttarget"""
+
+    def _from_catalog(self):
+        """Use different query for older pg versions
+        """
+        if self.dbconn.version < 84000:
+            self.query = self.query_83
+        return DbObjectDict._from_catalog(self)
+
     def to_map(self):
         """Convert the cast dictionary to a regular dictionary
 

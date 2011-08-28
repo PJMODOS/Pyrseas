@@ -33,10 +33,16 @@ class Sequence(DbClass):
 
         :param dbconn: a DbConnection object
         """
-        data = dbconn.fetchone(
-            """SELECT start_value, increment_by, max_value, min_value,
-                      cache_value
-               FROM %s.%s""" % (quote_id(self.schema), quote_id(self.name)))
+        if dbconn.version < 84000:
+            data = dbconn.fetchone(
+                """SELECT 0 AS start_value, increment_by, max_value, min_value,
+                          cache_value
+                   FROM %s.%s""" % (quote_id(self.schema), quote_id(self.name)))
+        else:
+            data = dbconn.fetchone(
+                """SELECT start_value, increment_by, max_value, min_value,
+                          cache_value
+                   FROM %s.%s""" % (quote_id(self.schema), quote_id(self.name)))
         for key, val in data.items():
             setattr(self, key, val)
 
