@@ -28,7 +28,7 @@ class Composite(DbType):
         :return: dictionary
         """
         if not hasattr(self, 'attributes'):
-            return
+            return {}
         attrs = [{att.name: att.type} for att in self.attributes]
         return {self.extern_key(): {'attributes': attrs}}
 
