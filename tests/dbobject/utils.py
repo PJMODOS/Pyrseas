@@ -129,7 +129,7 @@ class PostgresDb(object):
                       JOIN pg_namespace ON (relnamespace = pg_namespace.oid)
                       JOIN pg_roles ON (nspowner = pg_roles.oid)
                WHERE relkind in ('r', 'S', 'v')
-                     AND (nspname = 'public' OR rolname <> 'postgres')
+                     AND substring(nspname for 3) != 'pg_' AND nspname != 'information_schema'
                ORDER BY relkind DESC""")
         objs = curs.fetchall()
         curs.close()

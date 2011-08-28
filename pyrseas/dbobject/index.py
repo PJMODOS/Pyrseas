@@ -93,7 +93,7 @@ class IndexDict(DbObjectDict):
                 JOIN pg_roles ON (nspowner = pg_roles.oid)
                 JOIN pg_am ON (relam = pg_am.oid)
            WHERE NOT indisprimary
-                 AND (nspname = 'public' OR rolname <> 'postgres')
+                 AND substring(nspname for 3) != 'pg_' AND nspname != 'information_schema'
                  AND c.relname NOT IN (
                      SELECT conname FROM pg_constraint
                      WHERE contype = 'u')

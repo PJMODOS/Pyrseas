@@ -365,7 +365,7 @@ class ClassDict(DbObjectDict):
                 LEFT JOIN pg_description d
                      ON (c.oid = d.objoid AND d.objsubid = 0)
            WHERE relkind in ('r', 'S', 'v')
-                 AND (nspname = 'public' OR rolname <> 'postgres')
+                 AND substring(nspname for 3) != 'pg_' AND nspname != 'information_schema'
            ORDER BY nspname, relname"""
 
     inhquery = \

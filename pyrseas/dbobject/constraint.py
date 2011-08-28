@@ -251,7 +251,7 @@ class ConstraintDict(DbObjectDict):
                 JOIN pg_roles ON (nspowner = pg_roles.oid)
                 LEFT JOIN pg_class on (conname = relname)
                 LEFT JOIN pg_am on (relam = pg_am.oid)
-           WHERE (nspname = 'public' OR rolname <> 'postgres')
+           WHERE substring(nspname for 3) != 'pg_' AND nspname != 'information_schema'
            ORDER BY schema, 2, name"""
 
     def _from_catalog(self):

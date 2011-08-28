@@ -116,7 +116,7 @@ class SchemaDict(DbObjectDict):
            FROM pg_namespace n JOIN pg_roles ON (nspowner = pg_roles.oid)
                 LEFT JOIN pg_description d
                      ON (n.oid = d.objoid AND d.objsubid = 0)
-           WHERE nspname = 'public' OR rolname <> 'postgres'
+           WHERE substring(nspname for 3) != 'pg_' AND nspname != 'information_schema'
            ORDER BY nspname"""
 
     def from_map(self, inmap, newdb):

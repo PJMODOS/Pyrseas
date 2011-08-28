@@ -138,7 +138,7 @@ class ColumnDict(DbObjectDict):
                 LEFT JOIN pg_description d
                      ON (pg_class.oid = d.objoid AND d.objsubid = attnum)
            WHERE relkind in ('c', 'r')
-                 AND (nspname = 'public' OR rolname <> 'postgres')
+                 AND substring(nspname for 3) != 'pg_' AND nspname != 'information_schema'
                  AND attnum > 0
            ORDER BY nspname, relname, attnum"""
 
