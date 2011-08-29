@@ -204,7 +204,7 @@ class ProcDict(DbObjectDict):
                   END || prorettype::regtype AS returns,
                   l.lanname AS language, provolatile AS volatility,
                   proisstrict AS strict, proisagg, prosrc AS source,
-                  probin::text AS obj_file,
+                  NULLIF(probin::text, '-') AS obj_file,
                   prosecdef AS security_definer,
                   aggtransfn::regprocedure AS sfunc,
                   aggtranstype::regtype AS stype,
